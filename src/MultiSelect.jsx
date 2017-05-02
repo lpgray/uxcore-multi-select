@@ -187,10 +187,12 @@ export default class MultiSelect extends Component {
                 className="kuma-input"
                 type="text"
                 style={{
-                  margin: '0 auto 10px',
-                  height: '30px',
+                  margin: '5px',
+                  width: '80%',
+                  display: 'block',
+                  height: '26px',
                   lineHeight: '12px',
-                  padding: '6px 8px',
+                  padding: '4px 6px',
                 }}
                 placeholder={i18n[props.locale].keywordsPlaceholder}
                 onChange={(e) => {

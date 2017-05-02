@@ -32,7 +32,9 @@ export default class MultiSelect extends Component {
     onChange: PropTypes.func,
     onSubmit: PropTypes.func,
     locale: PropTypes.string,
+    showSearch: PropTypes.bool,
   };
+
   static defaultProps = {
     prefixCls: 'kuma-multi-select',
     className: '',
@@ -44,9 +46,10 @@ export default class MultiSelect extends Component {
     optionLabelProp: 'text',
     showSelectAll: true,
     showClear: true,
-    onChange() {},
-    onSubmit() {},
+    onChange() { },
+    onSubmit() { },
     locale: 'zh-cn',
+    showSearch: false,
   };
 
   state = {
@@ -102,7 +105,14 @@ export default class MultiSelect extends Component {
       if (this.hasSelected(item.props.value)) {
         switch (type) {
           case 'content':
-            return <span className={`${props.prefixCls}-selection__choice__content`}>{item.props[props.optionLabelProp]}<span className={`${props.prefixCls}-selection__choice__break`}>{props.titleBreakStr}</span></span>;
+            return (
+              <span className={`${props.prefixCls}-selection__choice__content`}>
+                {item.props[props.optionLabelProp]}
+                <span className={`${props.prefixCls}-selection__choice__break`}>
+                  {props.titleBreakStr}
+                </span>
+              </span>
+            );
           case 'title':
             return item.props[props.optionLabelProp] + props.titleBreakStr;
           default:
@@ -115,7 +125,11 @@ export default class MultiSelect extends Component {
     if (res.length === 0) {
       switch (type) {
         case 'content':
-          res = <span className={`${props.prefixCls}-selection__placeholder`}>{props.placeholder}</span>;
+          res = (
+            <span className={`${props.prefixCls}-selection__placeholder`}>
+              {props.placeholder}
+            </span>
+          );
           break;
         case 'title':
           res = [props.placeholder];
@@ -144,11 +158,21 @@ export default class MultiSelect extends Component {
 
   render() {
     const { props } = this;
+    let selectOptions = props.children;
+
+    if (this.state.keywords && this.props.showSearch) {
+      selectOptions = selectOptions.filter(item => {
+        if (item.props.text) {
+          return item.props.text.search(this.state.keywords) > -1;
+        }
+        return false;
+      });
+    }
 
     // 检查是否可以点击 全选
     let canSelectItemNumbers = 0;
 
-    React.Children.forEach(props.children, (item) => {
+    React.Children.forEach(selectOptions, (item) => {
       if (!item.props.disabled) {
         canSelectItemNumbers += 1;
       }
@@ -157,28 +181,48 @@ export default class MultiSelect extends Component {
     const menu = (
       <div className={`${props.prefixCls}-dropdown-border`}>
         <div className={`${props.prefixCls}-content`}>
+          {
+            this.props.showSearch ?
+              <input
+                className="kuma-input"
+                type="text"
+                style={{
+                  margin: '0 auto 10px',
+                  height: '30px',
+                  lineHeight: '12px',
+                  padding: '6px 8px',
+                }}
+                placeholder={i18n[props.locale].keywordsPlaceholder}
+                onChange={(e) => {
+                  this.setState({ keywords: e.target.value });
+                }}
+              /> :
+              null
+          }
           <CheckboxGroup
             onChange={this.handleChange}
             value={props.value}
           >
             {
-              React.Children.map(props.children, (item, index) => (
+              React.Children.map(selectOptions, (item, index) => (
                 <CheckboxGroup.Item {...item.props} key={index} jsxdisabled={props.disabled} />
               ))
             }
           </CheckboxGroup>
-
         </div>
         <div
-          className={classnames(`${props.prefixCls}-footer`, {
-            [`${props.prefixCls}-footer-hidden`]: !props.maxSelect && !props.showClear && !props.showSelectAll,
-          })}
+          className={
+            classnames(`${props.prefixCls}-footer`, {
+              [`${props.prefixCls}-footer-hidden`]:
+              !props.maxSelect && !props.showClear && !props.showSelectAll,
+            })
+          }
         >
           {!!props.maxSelect && <p>{
-              i18n[props.locale].maxSelect[0] +
-              props.maxSelect +
-              i18n[props.locale].maxSelect[1]
-            }</p>
+            i18n[props.locale].maxSelect[0] +
+            props.maxSelect +
+            i18n[props.locale].maxSelect[1]
+          }</p>
           }
           <Button
             className={classnames({
@@ -227,7 +271,12 @@ export default class MultiSelect extends Component {
             })}
           >
             <span className={`${props.prefixCls}-selection ${props.prefixCls}-selection--multiple`}>
-              <span className={`${props.prefixCls}-selection--multiple--content`} title={this.processLabel('title')}>{this.processLabel('content')}</span>
+              <span
+                className={`${props.prefixCls}-selection--multiple--content`}
+                title={this.processLabel('title')}
+              >
+                {this.processLabel('content')}
+              </span>
               <span className={`${props.prefixCls}-arrow`} />
             </span>
           </span>

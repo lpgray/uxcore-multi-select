@@ -70,6 +70,7 @@ class Demo extends React.Component {
           optionLabelProp="text"
           onChange={this.handleChange.bind(this)}
           onSubmit={this.handleSubmit.bind(this)}
+          showSearch
         >
           {text.map((item, index) => <Item value={`item${index}`} text={item} key={index} />)}
         </MultiSelect>
